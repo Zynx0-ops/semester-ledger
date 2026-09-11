@@ -4,7 +4,9 @@ A single-file school planner. Tasks are organized by class, filed automatically 
 how soon they are due, and checked off with a square checkbox on the dashboard.
 A progress wheel in the sidebar fills as you complete them.
 
-![status](https://img.shields.io/badge/build-single%20file-0E5A69)
+[![Deploy to GitHub Pages](https://github.com/Zynx0-ops/semester-ledger/actions/workflows/pages.yml/badge.svg)](https://github.com/Zynx0-ops/semester-ledger/actions/workflows/pages.yml)
+
+**Try it:** <https://zynx0-ops.github.io/semester-ledger/>
 
 ## Features
 
@@ -37,11 +39,22 @@ and coalesced into one save. If cloud saving is unavailable — a read-only view
 missing capability, a rate limit — the app degrades to local-only storage and says
 so in the status chip rather than failing silently or losing work.
 
+## Where it runs
+
+| Where | Saving |
+|---|---|
+| **GitHub Pages** — [zynx0-ops.github.io/semester-ledger](https://zynx0-ops.github.io/semester-ledger/) | This browser only (`localStorage`) |
+| **Claude Artifact** | Syncs across devices via `data/planner.json` |
+
+The two are independent: tasks added in one do not appear in the other. On Pages,
+tasks live only in the browser that created them, so clearing site data erases them.
+
 ## Running it
 
 `planner.html` is a body fragment, not a complete document — it is authored for
 the Claude Artifact publisher, which supplies the `<!doctype>` / `<head>` /
-`<body>` skeleton. To run it standalone, wrap it:
+`<body>` skeleton. The [Pages workflow](.github/workflows/pages.yml) wraps it on
+every push to `main`. To run it locally, wrap it the same way:
 
 ```bash
 printf '<!doctype html>\n<html><head><meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n</head><body>\n' > index.html

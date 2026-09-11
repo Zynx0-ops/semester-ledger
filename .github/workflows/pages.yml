@@ -1,0 +1,51 @@
+name: Deploy to GitHub Pages
+
+# planner.html is a body fragment (the Artifact publisher supplies the document
+# skeleton), so the site build wraps it into a complete page before deploying.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Wrap planner.html into a complete document
+        run: |
+          mkdir -p _site
+          {
+            printf '<!doctype html>\n<html lang="en">\n<head>\n'
+            printf '<meta charset="utf-8">\n'
+            printf '<meta name="viewport" content="width=device-width,initial-scale=1">\n'
+            printf '</head>\n<body>\n'
+            cat planner.html
+            printf '\n</body>\n</html>\n'
+          } > _site/index.html
+          touch _site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
