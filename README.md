@@ -1,8 +1,8 @@
 # Semester Ledger
 
-A single-file school planner. Tasks are organized by class, filed automatically by
-how soon they are due, and checked off with a square checkbox on the dashboard.
-A progress wheel in the sidebar fills as you complete them.
+A single-file school planner styled after Apple's own apps. Tasks are organized by
+class, filed automatically by how soon they are due, and checked off from the
+dashboard. A progress ring fills as you complete them.
 
 [![Deploy to GitHub Pages](https://github.com/Zynx0-ops/semester-ledger/actions/workflows/pages.yml/badge.svg)](https://github.com/Zynx0-ops/semester-ledger/actions/workflows/pages.yml)
 
@@ -10,34 +10,44 @@ A progress wheel in the sidebar fills as you complete them.
 
 ## Features
 
-- **Classes as categories.** Each class gets its own colour, shown as a rail down
-  the left edge of every task that belongs to it.
+- **Classes as categories.** Each class carries a colour and an icon, shown on
+  every task that belongs to it, with its own progress bar and `done/total`.
 - **Due dates and times.** Tasks file themselves into *Overdue*, *Today*,
-  *Tomorrow*, *This week*, *Upcoming*, and *No date set* — urgency ordering
-  rather than entry order. Overdue dates render in red, today's in the accent.
-- **Check it off.** Click the square next to a task; it strikes through, moves to
-  a collapsible *Completed* section, and every counter updates at once.
-- **Progress wheel.** Fills as tasks are completed. Select a class in the sidebar
-  and the wheel rescopes to that class; each class also carries its own progress
-  bar and `done/total` count.
-- **Inline editing**, delete with an **Undo** toast, and a two-step confirm for
-  deleting a class that names how many tasks go with it.
-- **Light and dark**, following the viewer's theme.
+  *Tomorrow*, *This Week*, *Later* and *No Date* — urgency order, not entry
+  order. Overdue reads red, today's reads in the accent colour.
+- **Check it off.** Tap the box; the task strikes through, moves to *Completed*,
+  and every counter and the ring update at once.
+- **Progress ring** that rescopes to whichever class you select.
+- **Notes and priority** per task, edited in a detail sheet.
+- **Undo** on every destructive action — deleting a task, deleting a class (and
+  its tasks), and completing a task while *Show Completed* is off.
 
-## How data is stored
+### Customization
 
-The planner has no backend. It persists through two layers:
+Everything below lives in the Settings sheet and syncs with your tasks.
 
-1. **`data/planner.json`**, written next to the page via the Claude Artifact
-   `artifact` capability (files form). This is what makes tasks follow you
-   between devices and browsers.
-2. **`localStorage`**, written synchronously on every change as an instant local
-   mirror and offline fallback.
+| Setting | Options |
+|---|---|
+| Theme | Auto · Light · Dark |
+| Accent colour | 9 system colours |
+| Checkbox | Square · Circle |
+| Row height | Roomy · Compact |
+| Group by | Due date · Class |
+| Sort within groups | Due · Priority · Name · Newest |
+| Show completed | On · Off |
+| Class colour & icon | 9 colours, 15 icons, per class |
 
-On load, both are read and the newer `updatedAt` wins. Writes are debounced ~1.4s
-and coalesced into one save. If cloud saving is unavailable — a read-only view, a
-missing capability, a rate limit — the app degrades to local-only storage and says
-so in the status chip rather than failing silently or losing work.
+## Design
+
+Styled on Apple's system conventions: SF Pro through the system font stack (no
+web fonts to load), iOS system greys and semantic colours, grouped inset lists
+with hairline separators, large-title navigation, segmented controls, iOS
+switches, translucent blurred bars, and sheets that become bottom sheets on a
+phone.
+
+Grouping by class hides the per-row class chip, since the section header already
+names it — one of several places where the chrome reflects the current view
+rather than repeating it.
 
 ## Where it runs
 
@@ -47,7 +57,50 @@ so in the status chip rather than failing silently or losing work.
 | **Claude Artifact** | Syncs across devices via `data/planner.json` |
 
 The two are independent: tasks added in one do not appear in the other. On Pages,
-tasks live only in the browser that created them, so clearing site data erases them.
+tasks live only in the browser that created them, so clearing site data erases
+them — use **Settings → Download a Backup**.
+
+### On accounts
+
+There is deliberately no login. Real accounts need a server to hold credentials
+and per-user data, and GitHub Pages only serves static files, so the only honest
+options are a backend service (Supabase, Firebase) or nothing. A password checked
+in client-side JavaScript would be readable by anyone in devtools and would sync
+nothing, so it is not implemented. The Artifact copy cannot host accounts either:
+artifacts block outbound network calls, a `db`-declaring artifact cannot be shared
+publicly, and the `user` capability needed to tell viewers apart is unavailable.
+
+## Data model
+
+```
+state = { v, updatedAt, settings, classes[], tasks[] }
+class  = { id, name, color, icon }
+task   = { id, classId, title, note, due, time, done, doneAt, priority, createdAt }
+```
+
+`normalize()` accepts v1 documents (no `settings`, no `note`/`priority`/`icon`)
+and fills defaults, so older saved data keeps working. Migration happens in
+memory on load and is only written back on the next change — loading the app
+never rewrites your data. A colour outside the current palette is preserved and
+added to the picker rather than being reset.
+
+Two layers persist it: `data/planner.json` next to the page via the Artifact
+`artifact` capability (files form, which avoids reloading the page on save), and
+`localStorage` written synchronously as a mirror and offline fallback. On load the
+newer `updatedAt` wins; writes are debounced and coalesced. If cloud saving is
+unavailable the app degrades to local-only and says so in Settings.
+
+Dates are `YYYY-MM-DD` strings compared lexically, and only ever parsed into a
+`Date` from explicit parts — never `new Date("...")`, which shifts by a day
+across timezones.
+
+### Appearance resolution
+
+The viewer's theme has three states (explicit `data-theme` stamp, or nothing at
+all for "system"), and the app adds its own preference on top. An inline script
+resolves all of it into one `data-appearance` attribute before first paint, so a
+dark viewer never sees a light flash, and a `MutationObserver` plus a
+`matchMedia` listener keep *Auto* in step when the host or OS theme changes.
 
 ## Running it
 
@@ -65,20 +118,3 @@ python3 -m http.server 8000
 
 Then open <http://localhost:8000>. Served this way `window.claude` is absent, so
 `claude.use()` resolves `null` and the app runs in local-only mode by design.
-
-## Structure
-
-Everything lives in `planner.html`:
-
-- **CSS tokens** — the complete light palette on bare `:root`; dark redefines the
-  same 18 tokens twice, once under `prefers-color-scheme` (guarded so an explicit
-  light choice wins) and once under `[data-theme="dark"]`.
-- **State** — `{ classes[], tasks[], updatedAt }`, mutated only through `commit()`,
-  which stamps the timestamp, mirrors to localStorage, re-renders, and schedules a save.
-- **Rendering** — full re-render from state on change. The progress wheel is the
-  one exception: it lives in static markup and is updated by attribute so its
-  `stroke-dashoffset` transition animates.
-
-Dates are handled as `YYYY-MM-DD` strings compared lexically and only ever parsed
-into a `Date` from explicit parts, never via `new Date("...")`, which would shift
-by a day across timezones.
