@@ -1,6 +1,6 @@
 # Semester Ledger
 
-A single-file school planner styled after Apple's own apps. Tasks are organized by
+A single-file school planner in dark glass: cream on near-black. Tasks are organized by
 class, filed automatically by how soon they are due, and checked off from the
 dashboard. A progress ring fills as you complete them.
 
@@ -32,7 +32,7 @@ Everything below lives in the Settings sheet and syncs with your tasks.
 | Setting | Options |
 |---|---|
 | Theme | Auto · Light · Dark |
-| Accent colour | 9 system colours |
+| Accent colour | Ivory (default) · 9 colours |
 | Checkbox | Square · Circle |
 | Row height | Roomy · Compact |
 | Group by | Due date · Class |
@@ -43,11 +43,21 @@ Everything below lives in the Settings sheet and syncs with your tasks.
 
 ## Design
 
-Styled on Apple's system conventions: SF Pro through the system font stack (no
-web fonts to load), iOS system greys and semantic colours, grouped inset lists
-with hairline separators, large-title navigation, segmented controls, iOS
-switches, translucent blurred bars, and sheets that become bottom sheets on a
-phone.
+Dark glass, monochrome by intent. A warm near-black ground lit by a soft glow
+from the upper left; translucent cards with 1px hairline borders and 22px radii;
+cream type instead of pure white; oversized tight-tracked numerals; and small
+uppercase, letter-spaced labels naming every card, field and section. Inter
+supplies the neutral grotesque, with the system stack behind it.
+
+Colour is spent in one place. The default **Ivory** accent is cream in dark mode
+and near-black ink in light mode, so the chrome carries no hue and class colours
+are the only chroma on the page. Each accent stores the colour drawn on top of it
+per theme — without that, a checkmark, switch knob or swatch tick would be white
+on cream and vanish.
+
+Light mode is a warm-paper twin rather than an inversion. The header stays clear
+at the top of the page and becomes a blurred glass bar, with a smaller title,
+once content scrolls beneath it. Sheets become bottom sheets on a phone.
 
 Grouping by class hides the per-row class chip, since the section header already
 names it — one of several places where the chrome reflects the current view
@@ -86,7 +96,9 @@ task   = { id, classId, title, note, due, time, done, doneAt, priority, createdA
 ```
 
 `normalize()` accepts v1 documents (no `settings`, no `note`/`priority`/`icon`)
-and fills defaults, so older saved data keeps working. Migration happens in
+and v2 documents, and fills defaults, so older saved data keeps working. Data
+saved before the glass redesign (below v3) opens once in the Ivory accent to match
+it; the next save writes v3, after which any accent you pick is kept. Migration happens in
 memory on load and is only written back on the next change — loading the app
 never rewrites your data. A colour outside the current palette is preserved and
 added to the picker rather than being reset.
