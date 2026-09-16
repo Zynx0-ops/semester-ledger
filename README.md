@@ -12,6 +12,9 @@ dashboard. A progress ring fills as you complete them.
 
 - **Classes as categories.** Each class carries a colour and an icon, shown on
   every task that belongs to it, with its own progress bar and `done/total`.
+- **Reorderable classes.** Tap *Edit* on the Classes card and drag the handles
+  into your real period order — by pointer or touch, or with the arrow keys on a
+  focused handle. The order drives both the sidebar and the class-grouped list.
 - **Due dates and times.** Tasks file themselves into *Overdue*, *Today*,
   *Tomorrow*, *This Week*, *Later* and *No Date* — urgency order, not entry
   order. Overdue reads red, today's reads in the accent colour.
@@ -36,6 +39,7 @@ Everything below lives in the Settings sheet and syncs with your tasks.
 | Sort within groups | Due · Priority · Name · Newest |
 | Show completed | On · Off |
 | Class colour & icon | 9 colours, 15 icons, per class |
+| Class order | Drag to match your timetable |
 
 ## Design
 
@@ -47,7 +51,10 @@ phone.
 
 Grouping by class hides the per-row class chip, since the section header already
 names it — one of several places where the chrome reflects the current view
-rather than repeating it.
+rather than repeating it. The colour does not go with it: the section header
+carries the class's coloured icon and each row's checkbox is tinted to match,
+the way Reminders tints by list. Each grouping mode therefore has exactly one
+colour carrier rather than two competing ones.
 
 ## Where it runs
 
