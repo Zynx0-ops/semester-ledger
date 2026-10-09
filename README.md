@@ -73,6 +73,19 @@ Grouping by class hides the per-row class chip, since the section header already
 carries that class's bullet — each grouping mode has exactly one colour carrier
 rather than two competing ones.
 
+## Canvas and calendar setup
+
+[docs/CALENDAR-SETUP.md](docs/CALENDAR-SETUP.md) covers consolidating school and
+personal scheduling into one system: which calendar tool to use and why, how to
+subscribe to a Canvas `.ics` feed (and what that feed will and will not deliver),
+a colour scheme that separates school from personal at a glance, and how to add
+planner-style to-dos and reminders on top.
+
+It also documents this planner's **Canvas import** — Canvas serves its feed with
+no CORS headers, so no web page may fetch it; the import reads a downloaded `.ics`
+file instead, matches items on their Canvas id so re-importing updates rather than
+duplicates, and never stores the feed URL.
+
 ## Where it runs
 
 | Where | Saving |
