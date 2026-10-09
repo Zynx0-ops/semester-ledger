@@ -12,6 +12,13 @@ dashboard. A progress ring fills as you complete them.
 
 - **Classes as categories.** Each class carries a colour and an icon, shown on
   every task that belongs to it, with its own progress bar and `done/total`.
+- **A departures board.** Every task carries a live countdown — minutes left,
+  hours, days, or how late it is — and the single most urgent one takes the whole
+  row in line yellow, badged *Next* or *Late*. The figures re-tick while open.
+- **Cross-device sync.** Open it on a laptop and a phone signed into the same
+  account and both stay in step, live. See [docs/SYNC.md](docs/SYNC.md).
+- **Clears itself up.** A completed task is removed once the calendar date moves
+  past its due date, on every device. Undoable, and switchable off.
 - **Calendar with events.** A month grid in the sidebar: navigate months, pick a
   day, and add, edit or delete events on it. Days carrying events show a dot per
   event in its class colour; days with an open task due are underlined; today is
@@ -42,6 +49,7 @@ Everything below lives in the Settings sheet and syncs with your tasks.
 | Group by | Due date · Class |
 | Sort within groups | Due · Priority · Name · Newest |
 | Show completed | On · Off |
+| Clear past-due done | On · Off |
 | Class bullet | 10 line colours, 15 icons, per class |
 | Class order | Drag to match your timetable |
 
@@ -86,16 +94,43 @@ no CORS headers, so no web page may fetch it; the import reads a downloaded `.ic
 file instead, matches items on their Canvas id so re-importing updates rather than
 duplicates, and never stores the feed URL.
 
+## Auto-clearing completed work
+
+A task is removed once it is **both** ticked off **and** past due, where past due
+is compared at **day resolution in your own timezone**: the local calendar date
+must have moved beyond the due date. A task due today and ticked off today is
+therefore never removed today — it goes tomorrow. An hour-level test was rejected
+because it would delete a task minutes after you finished it.
+
+It runs on check-off, on load, every 30 seconds, and whenever the tab becomes
+visible again — the timer exists so a tab left open across midnight still clears,
+and the same tick re-derives "today" so the date buckets do not freeze.
+
+Deletions go through the sync layer, so they apply on every device.
+
+**What this can lose.** Worth knowing before leaving it on:
+
+- A task you finished late but still want as a record. Gone the next day.
+- An overdue task ticked off by accident — it disappears immediately. The toast
+  offers **Undo**, but only until it fades.
+- Anything whose value is the record rather than the doing, like a graded
+  assignment you wanted to look back on.
+
+Mitigations: the toast undo, **Settings → Clear Past-Due Done** to switch it off,
+and **Download a Backup** before a big clear-out. Tasks with **no due date** and
+tasks completed **on or before** their due date are never touched.
+
 ## Where it runs
 
 | Where | Saving |
 |---|---|
 | **GitHub Pages** — [zynx0-ops.github.io/semester-ledger](https://zynx0-ops.github.io/semester-ledger/) | This browser only (`localStorage`) |
-| **Claude Artifact** | Syncs across devices via `data/planner.json` |
+| **Claude Artifact** | **Syncs live across devices** via the `db` capability |
 
 The two are independent: tasks added in one do not appear in the other. On Pages,
 tasks live only in the browser that created them, so clearing site data erases
-them — use **Settings → Download a Backup**.
+them — use **Settings → Download a Backup**. Cross-device sync needs the Artifact
+build, for the reason set out in [docs/SYNC.md](docs/SYNC.md).
 
 ### On accounts
 
@@ -110,10 +145,11 @@ publicly, and the `user` capability needed to tell viewers apart is unavailable.
 ## Data model
 
 ```
-state = { v, updatedAt, settings, classes[], tasks[], events[] }
+state = { v, updatedAt, settings, classes[], tasks[], events[], purged[] }
 class  = { id, name, color, icon }
-task   = { id, classId, title, note, due, time, done, doneAt, priority, createdAt }
-event  = { id, date, title, time, note, classId, createdAt }
+task   = { id, classId, title, note, due, time, done, doneAt, priority, createdAt, srcUid, updatedAt }
+event  = { id, date, title, time, note, classId, createdAt, srcUid, updatedAt }
+purged = [ srcUid, ... ]   ids cleared on purpose, so a Canvas import cannot resurrect them
 ```
 
 Events share the planner's storage, so they persist exactly like tasks and need no

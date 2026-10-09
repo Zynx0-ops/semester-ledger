@@ -20,9 +20,10 @@
     /* data saved before the signage redesign (v<4) opens in MTA yellow */
     var legacy = !(s && +s.v >= 4);
     var accent = legacy ? "yellow" : ((s && s.settings && s.settings.accent) || "yellow");
-    var map = {yellow:["#FCCC0A","#000000"],red:["#EE352E","#FFFFFF"],green:["#00933C","#FFFFFF"],
-               blue:["#0039A6","#FFFFFF"],orange:["#FF6319","#000000"],purple:["#B933AD","#FFFFFF"],
-               ltgreen:["#6CBE45","#000000"],brown:["#996633","#FFFFFF"],grey:["#A7A9AC","#000000"],
+    var map = {yellow:["#FACC15","#000000"],blue:["#1D4FD8","#FFFFFF"],orange:["#F97316","#000000"],
+               amber:["#F59E0B","#000000"],green:["#22C55E","#000000"],purple:["#C026D3","#FFFFFF"],
+               red:["#EF4444","#FFFFFF"],teal:["#06B6D4","#000000"],grey:["#9CA3AF","#000000"],
+               ltgreen:["#22C55E","#000000"],brown:["#F59E0B","#000000"],
                ivory:[dark?"#FFFFFF":"#000000", dark?"#000000":"#FFFFFF"]};
     var c = map[accent] || map.yellow;
     root.style.setProperty("--accent", c[0]);
@@ -39,8 +40,8 @@
    =========================================================== */
 :root{
   /* light: signs on tile */
-  --page-bg:#D7D4CE;
-  --page-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='80'%3E%3Crect width='160' height='80' fill='%23d7d4ce'/%3E%3Cg fill='%23fcfbf9'%3E%3Crect x='1' y='1' width='78' height='38'/%3E%3Crect x='81' y='1' width='78' height='38'/%3E%3Crect x='-39' y='41' width='78' height='38'/%3E%3Crect x='41' y='41' width='78' height='38'/%3E%3Crect x='121' y='41' width='78' height='38'/%3E%3C/g%3E%3C/svg%3E");
+  --page-bg:#E7E5E1;
+  --page-img:radial-gradient(1200px 760px at 50% -22%, rgba(255,255,255,.8), transparent 72%);
   --panel:#FCFBF9;
   --panel-2:#F1EFEA;
   --brd:rgba(0,0,0,.26);
@@ -61,8 +62,11 @@
   --knob:#FFFFFF;
   --shadow:0 2px 0 rgba(0,0,0,.18), 0 10px 26px rgba(0,0,0,.14);
   --sheet-shadow:0 26px 64px rgba(0,0,0,.4);
-  --accent:#FCCC0A;
+  --accent:#FACC15;
   --accent-ink:#000000;
+  --item:#0A0A0A;
+  --num:#0A0A0A;
+  --soon:#A16207;
 
   /* MTA line colours, used for bullets and semantics */
   --mta-red:#EE352E;
@@ -103,6 +107,9 @@
     --red:#EE352E;
     --orange:#FF6319;
     --green:#3BBF6B;
+    --item:#FACC15;
+    --num:#FFFFFF;
+    --soon:#FACC15;
   }
 }
 :root[data-appearance="dark"]{
@@ -130,6 +137,9 @@
   --red:#EE352E;
   --orange:#FF6319;
   --green:#3BBF6B;
+  --item:#FACC15;
+  --num:#FFFFFF;
+  --soon:#FACC15;
 }
 
 *{box-sizing:border-box}
@@ -189,6 +199,22 @@ h1{margin:0;font-size:clamp(28px,4.4vw,38px);line-height:1;font-weight:700;lette
   box-shadow:var(--shadow);overflow:hidden}
 .card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 0}
 
+/* the sign's double top edge, as on the real panels */
+.sign{position:relative}
+.sign::before{content:"";position:absolute;left:0;right:0;top:5px;height:1.5px;background:rgba(255,255,255,.9)}
+.sign-pill{display:inline-flex;align-items:center;gap:7px;flex:none;
+  border:1.5px solid rgba(255,255,255,.4);border-radius:999px;padding:5px 12px;
+  font-size:9.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#fff;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.sign-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+.sign-pill.late{border-color:var(--red);color:var(--red)}
+.sign-pill.late .dot{background:var(--red)}
+
+/* departures-board column header */
+.board-hd{display:flex;align-items:center;gap:10px;padding:2px 8px 7px;
+  border-bottom:1.5px solid var(--brd-2);margin-bottom:12px}
+.board-hd .grow{flex:1 1 auto}
+
 /* ---------------- task groups ---------------- */
 .group{margin:0 0 16px}
 .group-hdr{margin:0 0 8px;display:flex;align-items:center;gap:9px;
@@ -202,7 +228,8 @@ h1{margin:0;font-size:clamp(28px,4.4vw,38px);line-height:1;font-weight:700;lette
 .row{position:relative;display:flex;align-items:flex-start;gap:13px;padding:var(--row-pad) 15px}
 .row+.row::before{content:"";position:absolute;top:0;left:51px;right:0;height:1px;background:var(--sep)}
 .row-main{flex:1 1 auto;min-width:0;display:block;text-align:left;background:none;border:0;padding:0;margin:0}
-.row-title{display:block;font-size:16px;line-height:1.28;letter-spacing:-.016em;font-weight:500;word-break:break-word}
+.row-title{display:block;font-size:16px;line-height:1.28;letter-spacing:-.016em;font-weight:500;
+  color:var(--item);word-break:break-word}
 .row-note{display:block;font-size:13px;color:var(--label2);margin-top:2px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .row-sub{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:5px}
@@ -215,7 +242,31 @@ h1{margin:0;font-size:clamp(28px,4.4vw,38px);line-height:1;font-weight:700;lette
 .when.now{color:var(--label)}
 .row.done .row-title{color:var(--label3);text-decoration:line-through;text-decoration-thickness:1.5px}
 .row.done .row-note,.row.done .when{color:var(--label3)}
-.row-tail{flex:none;display:flex;align-items:center;gap:9px;padding-top:2px;color:var(--label3)}
+.row-tail{flex:none;display:flex;align-items:center;gap:11px;padding-top:1px;color:var(--label3)}
+/* the countdown: big figure over a unit label, as on an arrivals board */
+.cd{flex:none;display:flex;flex-direction:column;align-items:flex-end;min-width:50px;line-height:1}
+.cd b{font-size:23px;font-weight:700;letter-spacing:-.04em;color:var(--num);font-variant-numeric:tabular-nums}
+.cd i{font-size:8.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--label3);font-style:normal;margin-top:3px}
+.cd.late b{color:var(--red)}
+.cd.soon b{color:var(--soon)}
+.cd.none b{font-size:15px;color:var(--label3)}
+
+/* LIVE badge */
+.live{display:inline-block;margin-bottom:5px;padding:2px 7px;border-radius:3px;
+  background:var(--item);color:var(--panel);
+  font-size:8.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+
+/* the most urgent open task takes the whole row, board-style */
+.row.next{background:var(--accent)}
+.row.next .row-title,.row.next .cd b,.row.next .cd.late b{color:#000}
+.row.next .row-note,.row.next .when,.row.next .cd i,.row.next .chip{color:rgba(0,0,0,.68)}
+.row.next .when.late{color:#7F1D1D}
+.row.next .live{background:#000;color:var(--accent)}
+.row.next .bullet{box-shadow:0 0 0 1.5px rgba(0,0,0,.4)}
+.row.next .chev svg{stroke:rgba(0,0,0,.5)}
+.row.next .tick{border-color:rgba(0,0,0,.55)}
+.row.next::before,.row.next+.row::before{opacity:0}
 .flag{font-size:13px;font-weight:700;letter-spacing:.04em}
 .flag.p1{color:var(--orange)}
 .flag.p2{color:var(--red)}
@@ -502,6 +553,7 @@ textarea.field{resize:vertical;min-height:62px;line-height:1.4}
         <p class="eyebrow" id="today"></p>
       </div>
       <div class="sign-bullets" id="signBullets" aria-hidden="true"></div>
+      <span class="sign-pill" id="signPill"></span>
       <button class="icon-btn" id="settingsBtn" aria-label="Settings">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2v.2a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 2.6 14H2.4a2 2 0 1 1 0-4h.2A1.7 1.7 0 0 0 4.6 7a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10 2.6V2.4a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.9h.2a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1.2z"/></svg>
       </button>
@@ -526,6 +578,10 @@ textarea.field{resize:vertical;min-height:62px;line-height:1.4}
         </form>
       </section>
 
+      <div class="board-hd" id="boardHd">
+        <span class="mlabel grow">Departures</span>
+        <span class="mlabel">Due in</span>
+      </div>
       <div id="list"></div>
 
       <div class="done-bar" id="doneBar" hidden>
@@ -639,22 +695,21 @@ textarea.field{resize:vertical;min-height:62px;line-height:1.4}
 /* c = the accent, on = text/marks drawn on top of it (chosen per theme for contrast) */
 /* Official MTA line colours. c = the colour, on = what is drawn on top of it. */
 var ACCENTS = [
-  {id:"yellow",  name:"N Q R W", light:{c:"#FCCC0A",on:"#000000"}, dark:{c:"#FCCC0A",on:"#000000"}},
-  {id:"red",     name:"1 2 3",   light:{c:"#EE352E",on:"#FFFFFF"}, dark:{c:"#EE352E",on:"#FFFFFF"}},
-  {id:"green",   name:"4 5 6",   light:{c:"#00933C",on:"#FFFFFF"}, dark:{c:"#00933C",on:"#FFFFFF"}},
-  {id:"blue",    name:"A C E",   light:{c:"#0039A6",on:"#FFFFFF"}, dark:{c:"#0039A6",on:"#FFFFFF"}},
-  {id:"orange",  name:"B D F M", light:{c:"#FF6319",on:"#000000"}, dark:{c:"#FF6319",on:"#000000"}},
-  {id:"purple",  name:"7",       light:{c:"#B933AD",on:"#FFFFFF"}, dark:{c:"#B933AD",on:"#FFFFFF"}},
-  {id:"ltgreen", name:"G",       light:{c:"#6CBE45",on:"#000000"}, dark:{c:"#6CBE45",on:"#000000"}},
-  {id:"brown",   name:"J Z",     light:{c:"#996633",on:"#FFFFFF"}, dark:{c:"#996633",on:"#FFFFFF"}},
-  {id:"grey",    name:"L",       light:{c:"#A7A9AC",on:"#000000"}, dark:{c:"#A7A9AC",on:"#000000"}},
-  {id:"ivory",   name:"Mono",    light:{c:"#000000",on:"#FFFFFF"}, dark:{c:"#FFFFFF",on:"#000000"}}
+  {id:"yellow",  name:"D",    light:{c:"#FACC15",on:"#000000"}, dark:{c:"#FACC15",on:"#000000"}},
+  {id:"blue",    name:"A",    light:{c:"#1D4FD8",on:"#FFFFFF"}, dark:{c:"#1D4FD8",on:"#FFFFFF"}},
+  {id:"orange",  name:"B",    light:{c:"#F97316",on:"#000000"}, dark:{c:"#F97316",on:"#000000"}},
+  {id:"amber",   name:"C",    light:{c:"#F59E0B",on:"#000000"}, dark:{c:"#F59E0B",on:"#000000"}},
+  {id:"green",   name:"E",    light:{c:"#22C55E",on:"#000000"}, dark:{c:"#22C55E",on:"#000000"}},
+  {id:"purple",  name:"F",    light:{c:"#C026D3",on:"#FFFFFF"}, dark:{c:"#C026D3",on:"#FFFFFF"}},
+  {id:"red",     name:"1",    light:{c:"#EF4444",on:"#FFFFFF"}, dark:{c:"#EF4444",on:"#FFFFFF"}},
+  {id:"teal",    name:"T",    light:{c:"#06B6D4",on:"#000000"}, dark:{c:"#06B6D4",on:"#000000"}},
+  {id:"grey",    name:"L",    light:{c:"#9CA3AF",on:"#000000"}, dark:{c:"#9CA3AF",on:"#000000"}},
+  {id:"ivory",   name:"Mono", light:{c:"#000000",on:"#FFFFFF"}, dark:{c:"#FFFFFF",on:"#000000"}}
 ];
 /* route-bullet colours for new classes */
-var CLASS_COLORS = ["#EE352E","#0039A6","#00933C","#FF6319","#B933AD","#FCCC0A","#6CBE45","#996633","#A7A9AC","#808183"];
+var CLASS_COLORS = ["#1D4FD8","#F97316","#F59E0B","#FACC15","#22C55E","#C026D3","#EF4444","#06B6D4","#7C3AED","#9CA3AF"];
 var ICONS = ["","📘","🔬","🧪","📐","🧮","🌍","🎨","🎵","💻","📖","✍️","🏛️","🧠","⚽","🗣️"];
 var LS_KEY = "semester-ledger/v1";
-var DATA_PATH = "data/planner.json";
 var WD = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 var WD3 = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 var MO = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -663,7 +718,7 @@ var BUCKETS = [["overdue","Overdue"],["today","Today"],["tomorrow","Tomorrow"],[
 
 var DEFAULTS = {
   theme:"system", accent:"yellow", tick:"square", density:"comfortable",
-  groupBy:"due", sort:"due", showCompleted:true
+  groupBy:"due", sort:"due", showCompleted:true, autoClear:true
 };
 
 /* ===================== state ===================== */
@@ -672,7 +727,13 @@ var filter = "all";
 var showDone = false;
 var editingTask = null;
 var editingClass = null;
-var api = null, mode = "local", saveTimer = null, backoff = 1400, retried = false;
+/* sync: the db capability gives realtime shared documents per artifact, so every
+   device signed into the same account sees the same planner. */
+var db = null, syncState = "local", pushTimer = null;
+var pushed = null;            /* last state successfully sent, for diffing */
+var pendingDel = {};          /* deletes retried until the server confirms them */
+var applyingRemote = false;
+var firstSnap = {tasks:true, events:true};
 var toastTimer = null, mediaQuery = null, themeObserver = null;
 var orderEditing = false, reorder = null;
 /* calendar cursor; isoOf/pad are hoisted declarations so this is safe here */
@@ -680,7 +741,7 @@ var calY = new Date().getFullYear(), calM = new Date().getMonth();
 var selDate = isoOf(new Date()), editingEvent = null;
 var lastImport = "";
 
-function blank(){ return {v:4, classes:[], tasks:[], events:[], settings:copy(DEFAULTS), updatedAt:0}; }
+function blank(){ return {v:4, classes:[], tasks:[], events:[], purged:[], settings:copy(DEFAULTS), updatedAt:0}; }
 function copy(o){ var r={},k; for(k in o) if(Object.prototype.hasOwnProperty.call(o,k)) r[k]=o[k]; return r; }
 
 /* ===================== utils ===================== */
@@ -755,12 +816,14 @@ function writeLocal(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state));
 /* Accepts v1 (no settings, no note/priority/icon) and fills defaults. */
 function normalize(o){
   if(!o || typeof o!=="object") return null;
-  var out = {v:4, classes:[], tasks:[], events:[], settings:copy(DEFAULTS), updatedAt:+o.updatedAt||0};
+  var out = {v:4, classes:[], tasks:[], events:[], purged:[], settings:copy(DEFAULTS), updatedAt:+o.updatedAt||0};
+  out.purged = Array.isArray(o.purged)
+    ? o.purged.filter(function(x){ return typeof x==="string" && x; }).slice(-500) : [];
   var preSignage = !(+o.v >= 4);
   var inS = o.settings && typeof o.settings==="object" ? o.settings : {};
   Object.keys(DEFAULTS).forEach(function(k){
     var v=inS[k];
-    if(k==="showCompleted"){ if(typeof v==="boolean") out.settings[k]=v; return; }
+    if(k==="showCompleted"||k==="autoClear"){ if(typeof v==="boolean") out.settings[k]=v; return; }
     if(typeof v==="string" && v) out.settings[k]=v;
   });
   /* The signage redesign is built on the MTA palette, so data saved before it opens
@@ -785,6 +848,7 @@ function normalize(o){
       note: typeof e.note==="string" ? e.note.slice(0,2000) : "",
       classId: e.classId ? String(e.classId) : null,
       srcUid: e.srcUid ? String(e.srcUid).slice(0,200) : null,
+      updatedAt:+e.updatedAt||0,
       createdAt:+e.createdAt||0
     });
   });
@@ -800,36 +864,141 @@ function normalize(o){
       time: t.time ? String(t.time).slice(0,5) : null,
       done: !!t.done, doneAt: t.doneAt||null, priority:p,
       srcUid: t.srcUid ? String(t.srcUid).slice(0,200) : null,
+      updatedAt:+t.updatedAt||0,
       createdAt:+t.createdAt||0
     });
   });
   return out;
 }
 
-var PERMANENT = ["not_writer","not_granted","not_declared","capability_disabled","capability_removed",
-                 "consent_required","invalid_content","transform_error","read_only_path","too_large"];
-
-function scheduleSave(delay){
-  if(mode!=="cloud"||!api) return;
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(doSave, delay===undefined?1400:delay);
+/* ---- what we would send: one document per task and per event, so two devices
+   editing DIFFERENT tasks never collide; things that are inherently ordered or
+   singular (classes, settings) ride in one document each. ---- */
+function pushedSnapshot(){
+  var m={tasks:{},events:{}};
+  state.tasks.forEach(function(t){ m.tasks[t.id]=JSON.stringify(t); });
+  state.events.forEach(function(e){ m.events[e.id]=JSON.stringify(e); });
+  m.classes=JSON.stringify(state.classes);
+  m.settings=JSON.stringify(state.settings);
+  m.purged=JSON.stringify(state.purged);
+  return m;
 }
-function doSave(){
-  if(!api) return;
-  var files={}; files[DATA_PATH]=JSON.stringify(state);
-  api.publish(files).then(function(){ backoff=1400; retried=false; }, function(err){
-    var code=(err&&err.code)||"upstream_error";
-    if(code==="conflict") return;
-    if(PERMANENT.indexOf(code)!==-1){ mode="local"; api=null; return; }
-    if(code==="rate_limited"){ backoff=Math.min(backoff*2,20000); scheduleSave(backoff); return; }
-    if(!retried){ retried=true; scheduleSave(1200+Math.random()*1500); }
+function setSyncState(v){
+  syncState=v;
+  if($("settingsSheet") && $("settingsSheet").open) renderSettings();
+}
+function schedulePush(delay){
+  if(!db) return;
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(pushChanges, delay===undefined?700:delay);
+}
+function pushChanges(){
+  if(!db) return;
+  var prev = pushed || {tasks:{},events:{},classes:null,settings:null,purged:null};
+  var stamp = Date.now();
+  var writes=[], dels=[], k;
+
+  var seen={};
+  state.tasks.forEach(function(t){
+    seen[t.id]=1;
+    if(prev.tasks[t.id] !== JSON.stringify(t)){ t.updatedAt=stamp; writes.push(["tasks/"+t.id,t]); }
+  });
+  for(k in prev.tasks) if(!seen[k]) dels.push("tasks/"+k);
+
+  var seenE={};
+  state.events.forEach(function(e){
+    seenE[e.id]=1;
+    if(prev.events[e.id] !== JSON.stringify(e)){ e.updatedAt=stamp; writes.push(["events/"+e.id,e]); }
+  });
+  for(k in prev.events) if(!seenE[k]) dels.push("events/"+k);
+
+  if(prev.classes  !== JSON.stringify(state.classes))  writes.push(["meta/classes",{list:state.classes}]);
+  if(prev.settings !== JSON.stringify(state.settings)) writes.push(["meta/settings",{v:state.settings}]);
+  if(prev.purged   !== JSON.stringify(state.purged))   writes.push(["meta/purged",{uids:state.purged}]);
+
+  dels.forEach(function(path){ pendingDel[path]=1; });
+  for(k in pendingDel) if(dels.indexOf(k)<0) dels.push(k);
+  if(!writes.length && !dels.length) return;
+
+  var next = pushedSnapshot();   /* taken after updatedAt stamping, so it matches what we send */
+  var jobs = writes.map(function(w){
+    return db.doc(w[0]).set(copy(w[1])).then(function(){ return true; }, function(){ return false; });
+  }).concat(dels.map(function(path){
+    return db.doc(path).delete().then(function(){ delete pendingDel[path]; return true; },
+                                      function(){ return false; });
+  }));
+
+  Promise.all(jobs).then(function(res){
+    var allOk = res.every(function(x){ return x; });
+    /* on failure leave pushed null, so the next attempt re-sends everything */
+    pushed = allOk ? next : null;
+    setSyncState(allOk ? "live" : "retry");
+    if(!allOk) schedulePush(4000);
   });
 }
+
+/* ---- applying what other devices wrote ---- */
+function afterRemote(){
+  var merged = normalize({v:4, classes:state.classes, tasks:state.tasks, events:state.events,
+                          settings:state.settings, purged:state.purged, updatedAt:Date.now()});
+  if(merged) state=merged;
+  writeLocal();
+  pushed = pushedSnapshot();      /* we now match the server; nothing to resend */
+  render();
+  applyingRemote=false;
+}
+function applyCollection(which,snap){
+  applyingRemote=true;
+  var arr=[], ids={};
+  snap.docs.forEach(function(d){
+    var o=d.data();
+    if(!o) return;
+    o=copy(o); o.id=d.id; ids[d.id]=1; arr.push(o);
+  });
+  var extras=[];
+  if(firstSnap[which]){
+    firstSnap[which]=false;
+    /* first contact: keep anything this device had that the server has never seen */
+    extras = state[which].filter(function(x){ return !ids[x.id]; });
+    arr = arr.concat(extras);
+  }
+  state[which]=arr;
+  afterRemote();
+  extras.forEach(function(x){ db.doc(which+"/"+x.id).set(copy(x)); });
+  sweepCompletedOverdue();
+}
+function applyMetaDoc(name,snap){
+  var o = snap.exists ? snap.data() : null;
+  if(!o){                                  /* server has none yet: seed it from this device */
+    if(name==="classes")  db.doc("meta/classes").set({list:state.classes});
+    if(name==="settings") db.doc("meta/settings").set({v:state.settings});
+    if(name==="purged")   db.doc("meta/purged").set({uids:state.purged});
+    return;
+  }
+  applyingRemote=true;
+  if(name==="classes"  && Array.isArray(o.list)) state.classes=o.list;
+  if(name==="settings" && o.v && typeof o.v==="object") state.settings=o.v;
+  if(name==="purged"   && Array.isArray(o.uids)) state.purged=o.uids;
+  afterRemote();
+}
+function syncErr(){ setSyncState("retry"); }
+
+function startSync(){
+  if(!db) return;
+  setSyncState("live");
+  pushed = pushedSnapshot();
+  db.collection("tasks").onSnapshot(function(sn){ applyCollection("tasks",sn); }, syncErr);
+  db.collection("events").onSnapshot(function(sn){ applyCollection("events",sn); }, syncErr);
+  db.doc("meta/classes").onSnapshot(function(sn){ applyMetaDoc("classes",sn); }, syncErr);
+  db.doc("meta/settings").onSnapshot(function(sn){ applyMetaDoc("settings",sn); }, syncErr);
+  db.doc("meta/purged").onSnapshot(function(sn){ applyMetaDoc("purged",sn); }, syncErr);
+}
+
 function commit(){
   state.updatedAt = Date.now();
   writeLocal();
   render();
-  scheduleSave();
+  schedulePush();
 }
 
 /* ===================== appearance ===================== */
@@ -893,6 +1062,17 @@ function renderSignBullets(){
   var el=$("signBullets");
   if(!el) return;
   el.innerHTML = state.classes.slice(0,6).map(function(c){ return bulletHTML(c); }).join("");
+  var pill=$("signPill");
+  if(pill){
+    var openN=0, lateN=0, today=isoOf(new Date());
+    state.tasks.forEach(function(t){
+      if(t.done) return; openN++;
+      if(t.due && t.due<today) lateN++;
+    });
+    pill.className="sign-pill"+(lateN?" late":"");
+    pill.innerHTML='<span class="dot"></span>'+(lateN ? lateN+" late" : openN+" open");
+    pill.hidden = !state.classes.length;
+  }
 }
 
 function clsIcon(c,extra){
@@ -928,7 +1108,51 @@ function renderComposer(){
   $("cTitle").placeholder = none ? "Add a class first" : "New task";
 }
 
-function rowHTML(t){
+/* when a task is actually due: its time, or end of day if it has none */
+function dueStamp(t){
+  if(!t.due) return null;
+  var d=parseISO(t.due);
+  if(t.time){ var p=t.time.split(":"); d.setHours(+p[0],+p[1],0,0); }
+  else d.setHours(23,59,0,0);
+  return d.getTime();
+}
+/* an arrivals-board figure: a number and the unit under it */
+function countdown(t){
+  if(t.done) return {num:"\u2713", unit:"Done", cls:"none"};
+  if(!t.due)  return {num:"\u2014", unit:"No date", cls:"none"};
+  var ts=dueStamp(t), diff=ts-Date.now();
+  /* calendar-day difference, so "tomorrow" never reads as 2 days */
+  var dayDiff=Math.round((parseISO(t.due).getTime()-parseISO(isoOf(new Date())).getTime())/86400000);
+  if(diff<0){
+    var lateMin=Math.round(-diff/60000);
+    if(lateMin<60) return {num:lateMin, unit:"Min late", cls:"late"};
+    if(dayDiff===0) return {num:Math.round(lateMin/60), unit:"Hr late", cls:"late"};
+    var dl=Math.abs(dayDiff);
+    return {num:dl, unit:(dl===1?"Day late":"Days late"), cls:"late"};
+  }
+  var mins=Math.round(diff/60000);
+  if(mins<60) return {num:mins, unit:"Min left", cls:"soon"};
+  if(dayDiff===0) return {num:Math.floor(mins/60)+":"+pad(mins%60), unit:"Hr", cls:"soon"};
+  if(dayDiff===1) return {num:1, unit:"Day", cls:""};
+  return {num:dayDiff, unit:"Days", cls:""};
+}
+function cdHTML(t){
+  var c=countdown(t);
+  return '<span class="cd'+(c.cls?" "+c.cls:"")+'"><b>'+esc(String(c.num))+"</b><i>"+esc(c.unit)+"</i></span>";
+}
+function tickCountdowns(){
+  var rows=document.querySelectorAll("[data-tid]");
+  for(var i=0;i<rows.length;i++){
+    var t=taskOf(rows[i].getAttribute("data-tid"));
+    var cell=rows[i].querySelector(".cd");
+    if(!t||!cell) continue;
+    var c=countdown(t);
+    cell.className="cd"+(c.cls?" "+c.cls:"");
+    cell.innerHTML="<b>"+esc(String(c.num))+"</b><i>"+esc(c.unit)+"</i>";
+  }
+}
+
+function rowHTML(t,isNext){
   var c=classOf(t.classId);
   var when="";
   if(t.due||t.time){
@@ -949,12 +1173,16 @@ function rowHTML(t){
 
   var tint = (setting("groupBy")==="class" && c)
     ? ' data-tint="1" style="--tc:'+esc(c.color)+'"' : "";
-  return '<li class="row'+(t.done?" done":"")+'"'+tint+' data-tid="'+esc(t.id)+'">'
+  var badge = isNext
+    ? '<span class="live">'+((t.due && dueStamp(t)<Date.now())?"Late":"Next")+"</span>"
+    : "";
+  return '<li class="row'+(t.done?" done":"")+(isNext?" next":"")+'"'+tint+' data-tid="'+esc(t.id)+'">'
     + '<button class="tick" role="checkbox" aria-checked="'+(t.done?"true":"false")+'" data-act="toggle" data-id="'+esc(t.id)+'"'
     + ' aria-label="'+(t.done?"Mark not completed":"Mark completed")+': '+esc(t.title)+'">'+CHECK_SVG+"</button>"
     + '<button class="row-main" data-act="open" data-id="'+esc(t.id)+'">'
+    + badge
     + '<span class="row-title">'+esc(t.title)+"</span>"+note+sub+"</button>"
-    + '<span class="row-tail">'+flag+CHEV_SVG+"</span></li>";
+    + '<span class="row-tail">'+flag+cdHTML(t)+CHEV_SVG+"</span></li>";
 }
 
 function groupsFor(list){
@@ -993,16 +1221,21 @@ function renderList(){
       + "<p>Every task belongs to a class. Add the ones you’re taking and each gets its own colour, icon and progress.</p>"
       + "</section>";
     $("doneBar").hidden=true; $("doneList").innerHTML="";
+    if($("boardHd")) $("boardHd").hidden=true;
     return;
   }
 
   var open = state.tasks.filter(function(t){ return !t.done && inScope(t); });
   var groups = groupsFor(open);
+  /* the board highlights one row: the first one you would act on */
+  var nextId = (groups.length && groups[0].items.length) ? groups[0].items[0].id : null;
   var html="";
   groups.forEach(function(g){
     html += '<section class="group'+(g.late?" late":"")+'">'
       + '<h2 class="group-hdr">'+groupIcon(g)+esc(g.label)+'<span class="count">'+g.items.length+"</span></h2>"
-      + '<ul class="card rows">'+g.items.map(rowHTML).join("")+"</ul></section>";
+      + '<ul class="card rows">'+g.items.map(function(t){
+          return rowHTML(t, t.id===nextId);
+        }).join("")+"</ul></section>";
   });
 
   if(!open.length){
@@ -1015,6 +1248,7 @@ function renderList(){
       + "</p></section>";
   }
   host.innerHTML = html;
+  if($("boardHd")) $("boardHd").hidden = !open.length;
 
   var done = state.tasks.filter(function(t){ return t.done && inScope(t); });
   var showSection = setting("showCompleted") && done.length>0;
@@ -1025,7 +1259,9 @@ function renderList(){
   }
   if(showSection && showDone){
     done.sort(function(a,b){ return (b.doneAt||0)-(a.doneAt||0); });
-    $("doneList").innerHTML = '<ul class="card rows">'+done.map(rowHTML).join("")+"</ul>";
+    $("doneList").innerHTML = '<ul class="card rows">'+done.map(function(t){
+      return rowHTML(t,false);
+    }).join("")+"</ul>";
   }else{
     $("doneList").innerHTML="";
   }
@@ -1077,6 +1313,42 @@ function renderFoot(){
   var open=state.tasks.filter(function(t){ return !t.done; }).length;
   var late=state.tasks.filter(function(t){ return !t.done && t.due && t.due<TODAY; }).length;
   $("foot").textContent = open+(open===1?" open task":" open tasks")+(late?" · "+late+" overdue":"");
+}
+
+/* ===================== auto-clear =====================
+   "Past due" is compared at DAY resolution in the viewer's own timezone: a task
+   counts as past due only once the local calendar date has moved beyond its due
+   date. So a task due today and ticked off today is never removed today - it
+   goes tomorrow. That is deliberately the lenient reading; an hour-level test
+   would delete a task minutes after you finished it. */
+function sweepCompletedOverdue(){
+  if(!setting("autoClear")) return 0;
+  var today=isoOf(new Date());
+  var gone=[], keep=[];
+  state.tasks.forEach(function(t){
+    if(t.done && t.due && t.due < today) gone.push(t); else keep.push(t);
+  });
+  if(!gone.length) return 0;
+  var beforeTasks=state.tasks, beforePurged=state.purged.slice();
+  state.tasks=keep;
+  /* remember any Canvas ids so a later import does not resurrect them */
+  gone.forEach(function(t){
+    if(t.srcUid && state.purged.indexOf(t.srcUid)<0) state.purged.push(t.srcUid);
+  });
+  if(state.purged.length>500) state.purged=state.purged.slice(-500);
+  commit();
+  toast("Removed "+gone.length+" completed past-due task"+(gone.length===1?"":"s"),"Undo",function(){
+    state.tasks=beforeTasks; state.purged=beforePurged; commit();
+  });
+  return gone.length;
+}
+/* the tab can be open across midnight, which would otherwise freeze "today" */
+function refreshDay(){
+  var now=isoOf(new Date());
+  if(now===TODAY) return false;
+  TODAY=now; TOMORROW=shiftISO(TODAY,1); WEEK_END=shiftISO(TODAY,7);
+  render();
+  return true;
 }
 
 /* ===================== Canvas .ics import =====================
@@ -1138,7 +1410,7 @@ function eventBySrc(k){ for(var i=0;i<state.events.length;i++) if(state.events[i
 function importCanvas(text){
   var items=parseICS(text);
   if(!items.length) return "No calendar entries found in that file.";
-  var addT=0, updT=0, addE=0, updE=0, undated=0, skip=0, unmatched={};
+  var addT=0, updT=0, addE=0, updE=0, undated=0, skip=0, purgedSkip=0, unmatched={};
   items.forEach(function(it){
     if(!it.summary){ skip++; return; }
     if(!it.start){ undated++; return; }
@@ -1149,6 +1421,7 @@ function importCanvas(text){
     if(course && !cls) unmatched[course]=true;
 
     var key = it.uid || ("sl:"+title+"|"+it.start.date);
+    if(state.purged.indexOf(key)>=0){ purgedSkip++; return; }   /* cleared on purpose; stay gone */
     var isAssignment = /assignment/i.test(it.uid||"") || /\/assignments\//.test(it.url||"");
     var time = it.start.allDay ? null : it.start.time;
 
@@ -1185,6 +1458,7 @@ function importCanvas(text){
   var msg = parts.length ? "Added "+parts.join(" and ") : "Nothing new to add";
   if(updT+updE) msg += ", updated "+(updT+updE);
   if(undated) msg += ". "+undated+(undated===1?" item had no date and was skipped":" items had no date and were skipped");
+  if(purgedSkip) msg += ". "+purgedSkip+(purgedSkip===1?" item you already cleared was left out":" items you already cleared were left out");
   var un=Object.keys(unmatched);
   if(un.length) msg += ". No class match for "+un.slice(0,4).join(", ")+(un.length>4?"...":"")
     + " - rename a class to match, then import again";
@@ -1330,6 +1604,8 @@ function renderSettings(){
     + seg("sort",[["due","Due"],["priority","Priority"],["name","Name"],["added","Newest"]],setting("sort"))+"</div>"
     + '<div class="srow"><span class="srow-label">Show Completed<span class="srow-hint">Keep finished tasks in a section at the bottom</span></span>'
     + switchHTML("showCompleted",setting("showCompleted"))+"</div>"
+    + '<div class="srow"><span class="srow-label">Clear Past-Due Done<span class="srow-hint">Remove a completed task once the calendar date has moved past its due date</span></span>'
+    + switchHTML("autoClear",setting("autoClear"))+"</div>"
     + "</div></div>"
 
     + '<div class="sec"><p class="sec-hdr">Data</p><div class="card">'
@@ -1343,9 +1619,11 @@ function renderSettings(){
   if(imp) imp.textContent = lastImport
     || "Canvas cannot be fetched from a web page. Download your Canvas calendar feed and import the file here; re-importing updates items instead of duplicating them.";
   var note=$("syncNote");
-  if(note) note.textContent = mode==="cloud"
-    ? "Synced with your Claude account, so your tasks follow you between devices."
-    : "Saved in this browser only. Tasks won’t appear on your other devices.";
+  if(note) note.textContent =
+    syncState==="live"       ? "Synced live. Open this planner on another device signed into the same account and both stay in step."
+  : syncState==="connecting" ? "Connecting to sync…"
+  : syncState==="retry"      ? "Offline or rate limited. Changes are saved here and sent when the connection returns."
+  : "Saved in this browser only. Cross-device sync needs the Claude artifact build of this planner.";
 }
 
 /* ===================== task sheet ===================== */
@@ -1434,7 +1712,10 @@ document.addEventListener("click", function(e){
     var on = sw.getAttribute("aria-checked")!=="true";
     sw.setAttribute("aria-checked", on?"true":"false");
     var sname=sw.getAttribute("data-switch");
-    if(sname){ state.settings[sname]=on; commit(); }
+    if(sname){
+      state.settings[sname]=on; commit();
+      if(sname==="autoClear" && on) sweepCompletedOverdue();
+    }
     return;
   }
 
@@ -1469,6 +1750,7 @@ document.addEventListener("click", function(e){
     var vanished = t.done && !setting("showCompleted");
     commit();
     if(had){ var again=document.querySelector('.tick[data-id="'+id+'"]'); if(again) again.focus(); }
+    if(t.done && sweepCompletedOverdue()) return;   /* it was already past due: cleared, with its own undo */
     if(vanished){
       toast("Completed \u201C"+t.title+"\u201D","Undo",function(){
         var back=taskOf(id);
@@ -1631,7 +1913,7 @@ document.addEventListener("keydown", function(e){
 });
 
 document.addEventListener("visibilitychange", function(){
-  if(document.visibilityState==="hidden" && saveTimer){ clearTimeout(saveTimer); saveTimer=null; doSave(); }
+  if(document.visibilityState==="hidden" && pushTimer){ clearTimeout(pushTimer); pushTimer=null; pushChanges(); }
 });
 
 /* ===================== reordering classes ===================== */
@@ -1772,16 +2054,10 @@ function anchorDownload(name,json){
 }
 
 /* ===================== boot ===================== */
-function loadRemote(){
-  return fetch(DATA_PATH,{cache:"no-store"}).then(function(r){
-    return r.ok ? r.text() : null;
-  }).then(function(txt){ return txt ? normalize(JSON.parse(txt)) : null; })
-   .catch(function(){ return null; });
-}
-function connect(){
+function connectDb(){
   try{
     if(!(window.claude&&typeof window.claude.use==="function")) return Promise.resolve(null);
-    return window.claude.use("artifact").catch(function(){ return null; });
+    return window.claude.use("db").catch(function(){ return null; });
   }catch(e){ return Promise.resolve(null); }
 }
 
@@ -1807,15 +2083,25 @@ function boot(){
   watchScroll();
   render();
 
-  Promise.all([loadRemote(),connect()]).then(function(res){
-    var remote=res[0]; api=res[1];
-    if(remote && (remote.updatedAt||0)>(state.updatedAt||0)){ state=remote; writeLocal(); render(); }
-    mode = api ? "cloud" : "local";
-    var hasContent = state.classes.length||state.tasks.length;
-    var localNewer = !remote || (state.updatedAt||0)>(remote.updatedAt||0);
-    if(api&&hasContent&&localNewer) scheduleSave(400);
-    if($("settingsSheet").open) renderSettings();
+  setSyncState("connecting");
+  connectDb().then(function(d){
+    db = d;
+    if(!db){ setSyncState("local"); return; }
+    startSync();
   });
+
+  /* day rollover, the overdue sweep, and the live countdown figures */
+  setInterval(function(){
+    refreshDay();
+    tickCountdowns();
+    sweepCompletedOverdue();
+  }, 30000);
+  document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState==="visible"){ refreshDay(); tickCountdowns(); sweepCompletedOverdue(); }
+  });
+  window.addEventListener("online", function(){ schedulePush(200); });
+
+  sweepCompletedOverdue();
 }
 
 boot();
