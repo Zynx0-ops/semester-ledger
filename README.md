@@ -1,6 +1,6 @@
 # Semester Ledger
 
-A single-file school planner in dark glass: cream on near-black. Tasks are organized by
+A single-file school planner built on the NYC Subway sign system. Tasks are organized by
 class, filed automatically by how soon they are due, and checked off from the
 dashboard. A progress ring fills as you complete them.
 
@@ -12,6 +12,10 @@ dashboard. A progress ring fills as you complete them.
 
 - **Classes as categories.** Each class carries a colour and an icon, shown on
   every task that belongs to it, with its own progress bar and `done/total`.
+- **Calendar with events.** A month grid in the sidebar: navigate months, pick a
+  day, and add, edit or delete events on it. Days carrying events show a dot per
+  event in its class colour; days with an open task due are underlined; today is
+  outlined and the selected day is filled. Deleting an event is undoable.
 - **Reorderable classes.** Tap *Edit* on the Classes card and drag the handles
   into your real period order — by pointer or touch, or with the arrow keys on a
   focused handle. The order drives both the sidebar and the class-grouped list.
@@ -32,39 +36,42 @@ Everything below lives in the Settings sheet and syncs with your tasks.
 | Setting | Options |
 |---|---|
 | Theme | Auto · Light · Dark |
-| Accent colour | Ivory (default) · 9 colours |
+| Line colour | 9 MTA line colours (default N Q R W yellow) · Mono |
 | Checkbox | Square · Circle |
 | Row height | Roomy · Compact |
 | Group by | Due date · Class |
 | Sort within groups | Due · Priority · Name · Newest |
 | Show completed | On · Off |
-| Class colour & icon | 9 colours, 15 icons, per class |
+| Class bullet | 10 line colours, 15 icons, per class |
 | Class order | Drag to match your timetable |
 
 ## Design
 
-Dark glass, monochrome by intent. A warm near-black ground lit by a soft glow
-from the upper left; translucent cards with 1px hairline borders and 22px radii;
-cream type instead of pure white; oversized tight-tracked numerals; and small
-uppercase, letter-spaced labels naming every card, field and section. Inter
-supplies the neutral grotesque, with the system stack behind it.
+Modelled on the New York City Transit Authority signage system — the Vignelli and
+Noorda standard — because that is the reference this redesign was given.
 
-Colour is spent in one place. The default **Ivory** accent is cream in dark mode
-and near-black ink in light mode, so the chrome carries no hue and class colours
-are the only chroma on the page. Each accent stores the colour drawn on top of it
-per theme — without that, a checkmark, switch knob or swatch tick would be white
-on cream and vanish.
-
-Light mode is a warm-paper twin rather than an inversion. The header stays clear
-at the top of the page and becomes a blurred glass bar, with a smaller title,
-once content scrolls beneath it. Sheets become bottom sheets on a phone.
+- **Black enamel signs.** The header is a station sign; section headers, card
+  headers and sheet headers are black sign bars with white tracked capitals. They
+  stay black in both themes, because the sign is the sign.
+- **Subway tile.** Light mode hangs those signs on a running-bond white tile
+  field, drawn as an inline SVG pattern. Dark mode is flat black enamel.
+- **Route bullets.** Every class renders as a circular route bullet in its line
+  colour, carrying its icon or its initial — on task rows, on class-grouped
+  section headers, on calendar events, and across the top of the station sign.
+- **Helvetica.** `Helvetica Neue` first, which is the real face on Apple devices
+  and is what the system switched to in 1989. Archivo is loaded as the fallback so
+  the grotesque holds on Windows and Android; Arial and Liberation Sans follow it.
+- **Colour only in bullets.** In the real system type is never coloured — it is
+  white on black or black on white, and colour is reserved for route bullets. So
+  interactive text here takes full-contrast ink and the line colour is spent on
+  bullets, the progress arc, the selected day and the primary button. Red is the
+  1-2-3 red and marks overdue work.
+- **Square corners, hairline rules, tracked capitals, tabular figures.** Buttons
+  are rectangles, not pills. Segmented controls are divided boxes.
 
 Grouping by class hides the per-row class chip, since the section header already
-names it — one of several places where the chrome reflects the current view
-rather than repeating it. The colour does not go with it: the section header
-carries the class's coloured icon and each row's checkbox is tinted to match,
-the way Reminders tints by list. Each grouping mode therefore has exactly one
-colour carrier rather than two competing ones.
+carries that class's bullet — each grouping mode has exactly one colour carrier
+rather than two competing ones.
 
 ## Where it runs
 
@@ -90,15 +97,20 @@ publicly, and the `user` capability needed to tell viewers apart is unavailable.
 ## Data model
 
 ```
-state = { v, updatedAt, settings, classes[], tasks[] }
+state = { v, updatedAt, settings, classes[], tasks[], events[] }
 class  = { id, name, color, icon }
 task   = { id, classId, title, note, due, time, done, doneAt, priority, createdAt }
+event  = { id, date, title, time, note, classId, createdAt }
 ```
 
-`normalize()` accepts v1 documents (no `settings`, no `note`/`priority`/`icon`)
-and v2 documents, and fills defaults, so older saved data keeps working. Data
-saved before the glass redesign (below v3) opens once in the Ivory accent to match
-it; the next save writes v3, after which any accent you pick is kept. Migration happens in
+Events share the planner's storage, so they persist exactly like tasks and need no
+separate setup. A class and its events are deliberately independent: deleting a
+class clears the class off its events rather than deleting them, and that is undoable.
+
+`normalize()` accepts v1, v2 and v3 documents and fills defaults, so older saved
+data keeps working — a document with no `events` array simply gains an empty one.
+Data saved before the signage redesign (below v4) opens once in line yellow to match
+it; the next save writes v4, after which any line colour you pick is kept. Migration happens in
 memory on load and is only written back on the next change — loading the app
 never rewrites your data. A colour outside the current palette is preserved and
 added to the picker rather than being reset.
